@@ -10,7 +10,6 @@ import com.badlogic.gdx.utils.Disposable;
 public class Goal extends RectEntity implements Renderable, Disposable, Actor {
 
 	private AnimationWrapper<TextureRegion> flagAnimation;
-	private TextureRegion currentFrame;
 
 	private boolean reached = false;
 	private float reachTime = 0;
@@ -32,16 +31,13 @@ public class Goal extends RectEntity implements Renderable, Disposable, Actor {
 			game.triggerAiWin();
 			reachTime += Gdx.graphics.getDeltaTime();
 		}
-
-		float animationTime = reached ? reachTime : 0;
-		currentFrame = flagAnimation.getKeyFrame(animationTime);
 	}
 
 	@Override
 	public void render(Renderer renderer) {
-		if (currentFrame != null) {
-			renderer.draw(rect, currentFrame);
-		}
+		float animationTime = reached ? reachTime : 0;
+		TextureRegion currentFrame = flagAnimation.getKeyFrame(animationTime);
+		renderer.draw(rect, currentFrame);
 	}
 
 	@Override
