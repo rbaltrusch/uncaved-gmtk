@@ -22,6 +22,8 @@ import com.mygdx.game.util.DelayedRunnableHandler;
 public final class GameLoop extends ApplicationAdapter {
 
 	private static final int TILESIZE = 32;
+	public static final int SCREEN_WIDTH = 800;
+	public static final int SCREEN_HEIGHT = 640;
 
 	private DelayedRunnableHandler callbackHandler;
 	private float time = 0;
@@ -97,11 +99,11 @@ public final class GameLoop extends ApplicationAdapter {
 
 	private void toggleFullscreen() {
 		boolean fullscreen = Gdx.graphics.isFullscreen();
-		DisplayMode mode = Gdx.graphics.getDisplayMode();
 		boolean success = false;
 		if (fullscreen) {
-			success = Gdx.graphics.setWindowedMode(mode.width, mode.height);
+			success = Gdx.graphics.setWindowedMode(SCREEN_WIDTH, SCREEN_HEIGHT);
 		} else {
+			DisplayMode mode = Gdx.graphics.getDisplayMode();
 			success = Gdx.graphics.setFullscreenMode(mode);
 		}
 		Gdx.app.log("main", String.format("Setting fullscreen to %s, success: %s", !fullscreen, success));

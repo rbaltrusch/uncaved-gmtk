@@ -10,8 +10,9 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setTitle("Uncaved");
 		config.setForegroundFPS(60);
-		config.setWindowedMode(800, 640);
+		config.setWindowedMode(GameLoop.SCREEN_WIDTH, GameLoop.SCREEN_HEIGHT);
 		config.useVsync(true);
+		config.setResizable(false);
 		new Lwjgl3Application(new GameLoop(), config);
 	}
 }
