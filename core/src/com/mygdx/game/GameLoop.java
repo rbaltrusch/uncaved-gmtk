@@ -46,13 +46,13 @@ public final class GameLoop extends ApplicationAdapter {
 		callbackHandler = new DelayedRunnableHandler();
 
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 640);
+		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
 		renderer = new Renderer(camera);
 
 		Texture flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
 		AnimationWrapper<TextureRegion> flagAnimation = AnimationWrapper.of(flagTexture).build(32, 45, 0.025f,
 				x -> x[0]);
-		goal = new Goal(new Rectangle(Gdx.graphics.getWidth() - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
+		goal = new Goal(new Rectangle(SCREEN_WIDTH - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
 
 		Texture warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
 		AnimationWrapper<TextureRegion> warriorAnimation = AnimationWrapper.of(warriorTexture).build(64, 64, 0.1f,
