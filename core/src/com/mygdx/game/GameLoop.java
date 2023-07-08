@@ -10,9 +10,15 @@ import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -42,11 +48,22 @@ public final class GameLoop extends ApplicationAdapter {
 	private AiPlayer aiPlayer;
 	private Goal goal;
 	private Boulder boulder;
+	private BitmapFont font;
+	private SpriteBatch batch;
 
 	private boolean over = false;
 
 	@Override
 	public void create() {
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Kenney Pixel.ttf"));
+		FreeTypeFontParameter param = new FreeTypeFontParameter();
+		param.borderColor = new Color(61 / 256f, 43 / 256f, 31 / 256f, 1);
+		param.color = new Color(227 / 256f, 218 / 256f, 201 / 256f, 1);
+		param.borderWidth = 1f;
+		param.size = 36;
+		font = generator.generateFont(param);
+		generator.dispose();
+
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
 		music.setLooping(true);
 		music.play();
@@ -58,7 +75,8 @@ public final class GameLoop extends ApplicationAdapter {
 		callbackHandler = new DelayedRunnableHandler();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
-		renderer = new Renderer(camera);
+		batch = new SpriteBatch();
+		renderer = new Renderer(camera, batch);
 
 		goal = createGoal();
 		aiPlayer = createAiPlayer();
@@ -81,7 +99,7 @@ public final class GameLoop extends ApplicationAdapter {
 		Texture deathTexture = new Texture(Gdx.files.internal("warrior-death.png"));
 		AnimationWrapper<TextureRegion> deathAnimation = AnimationWrapper.of(deathTexture).build(64, 64, 0.05f,
 				x -> x[0]);
-		return new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation,
+		return new AiPlayer(new Rectangle(TILESIZE, 7 * TILESIZE, TILESIZE, TILESIZE * 2), warriorAnimation,
 				deathAnimation);
 	}
 
@@ -102,12 +120,19 @@ public final class GameLoop extends ApplicationAdapter {
 		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
-		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
+		Renderable restartText = over ? (renderer_) -> {
+			GlyphLayout layout = new GlyphLayout(font, "Press R to restart");
+			float x = (SCREEN_WIDTH - layout.width) / 2;
+			float y = (SCREEN_HEIGHT - layout.height) / 2;
+			font.draw(batch, layout, x, y);
+		} : x -> {
+		};
+		renderer.render(Stream.of(goal, aiPlayer, boulder, restartText).map(x -> x)::iterator);
 	}
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal, boulder)
+		Stream.of(renderer, font, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal, boulder)
 				.forEach(Disposable::dispose);
 	}
 

@@ -18,10 +18,10 @@ public final class Renderer implements Disposable {
 	private SpriteBatch batch;
 	private Camera camera;
 
-	public Renderer(Camera camera) {
+	public Renderer(Camera camera, SpriteBatch batch) {
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
-		batch = new SpriteBatch();
+		this.batch = Objects.requireNonNull(batch);
 		this.camera = Objects.requireNonNull(camera);
 	}
 
@@ -90,6 +90,5 @@ public final class Renderer implements Disposable {
 	@Override
 	public void dispose() {
 		shapeRenderer.dispose();
-		batch.dispose();
 	}
 }
