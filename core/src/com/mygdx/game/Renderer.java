@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -44,9 +45,20 @@ public final class Renderer implements Disposable {
 	}
 
 	public void drawRectangle(Rectangle rect, Color color, boolean filled) {
-//		shapeRenderer.set(filled ? ShapeType.Filled : ShapeType.Line);
-//		shapeRenderer.setColor(color);
-//		shapeRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+		boolean batchDrawing = batch.isDrawing();
+		if (batchDrawing) {
+			batch.end();
+		}
+
+		shapeRenderer.begin();
+		shapeRenderer.set(filled ? ShapeType.Filled : ShapeType.Line);
+		shapeRenderer.setColor(color);
+		shapeRenderer.rect(rect.x, rect.y, rect.width, rect.height);
+		shapeRenderer.end();
+
+		if (batchDrawing) {
+			batch.begin();
+		}
 	}
 
 	public void drawCircle(Rectangle pos, float radius, Color color) {
