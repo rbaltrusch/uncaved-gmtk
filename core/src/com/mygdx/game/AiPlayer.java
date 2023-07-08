@@ -1,7 +1,7 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Animation;
+import java.util.Objects;
+
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
@@ -9,16 +9,14 @@ import com.mygdx.game.util.Tuple;
 
 public class AiPlayer extends RectEntity implements Renderable, Actor, Disposable {
 
-	private Color color;
 	private Tuple speed;
-	private Animation<TextureRegion> walkAnimation;
+	private AnimationWrapper<TextureRegion> walkAnimation;
 	private TextureRegion currentFrame;
 
-	public AiPlayer(Rectangle rect, Animation<TextureRegion> walkAnimation) {
+	public AiPlayer(Rectangle rect, AnimationWrapper<TextureRegion> walkAnimation) {
 		super(rect);
-		color = new Color(1, 0.5f, 0.5f, 1);
 		speed = new Tuple(200, 0);
-		this.walkAnimation = walkAnimation;
+		this.walkAnimation = Objects.requireNonNull(walkAnimation);
 	}
 
 	@Override
@@ -34,12 +32,11 @@ public class AiPlayer extends RectEntity implements Renderable, Actor, Disposabl
 	public void render(Renderer renderer) {
 		if (currentFrame != null) {
 			renderer.draw(rect, currentFrame);
-		} else {
-			renderer.drawRectangle(rect, color);
 		}
 	}
 
 	@Override
 	public void dispose() {
+		walkAnimation.dispose();
 	}
 }

@@ -1,6 +1,5 @@
 package com.mygdx.game;
 
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -11,7 +10,6 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -38,8 +36,6 @@ public final class GameLoop extends ApplicationAdapter {
 	private Renderer renderer;
 	private AiPlayer aiPlayer;
 	private Goal goal;
-	private Texture flagTexture;
-	private Texture warriorTexture;
 
 	private boolean over = false;
 
@@ -51,18 +47,14 @@ public final class GameLoop extends ApplicationAdapter {
 		camera.setToOrtho(false, 800, 640);
 		renderer = new Renderer(camera);
 
-		flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
-		TextureRegion[][] flagFrames = TextureRegion.split(flagTexture, 32, 45);
-		Animation<TextureRegion> flagAnimation = new Animation<>(0.025f, flagFrames[0]);
+		Texture flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
+		AnimationWrapper<TextureRegion> flagAnimation = AnimationWrapper.of(flagTexture).build(32, 45, 0.025f,
+				x -> x[0]);
 		goal = new Goal(new Rectangle(Gdx.graphics.getWidth() - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
 
-		warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
-		TextureRegion[][] warriorFramesRaw = TextureRegion.split(warriorTexture, 64, 64);
-		TextureRegion[] warriorFrames = new TextureRegion[5];
-		IntStream.range(0, 5).forEach(i -> {
-			warriorFrames[i] = warriorFramesRaw[0][i];
-		});
-		Animation<TextureRegion> warriorAnimation = new Animation<>(0.25f, warriorFrames);
+		Texture warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
+		AnimationWrapper<TextureRegion> warriorAnimation = AnimationWrapper.of(warriorTexture).build(64, 64, 0.1f,
+				x -> x[0]);
 		aiPlayer = new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation);
 
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
@@ -91,8 +83,7 @@ public final class GameLoop extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, tiledMapRenderer, flagTexture, warriorTexture, music, drumTap, drumTap2, aiPlayer, goal)
-				.forEach(Disposable::dispose);
+		Stream.of(renderer, tiledMapRenderer, music, drumTap, drumTap2, aiPlayer, goal).forEach(Disposable::dispose);
 	}
 
 	public void handleInput() {

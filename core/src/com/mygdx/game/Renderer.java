@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import java.util.Objects;
+
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,7 +21,7 @@ public final class Renderer implements Disposable {
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
 		batch = new SpriteBatch();
-		this.camera = camera;
+		this.camera = Objects.requireNonNull(camera);
 	}
 
 	public void render(Iterable<Renderable> renderables) {
