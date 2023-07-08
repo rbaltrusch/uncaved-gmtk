@@ -1,23 +1,35 @@
 package com.mygdx.game;
 
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics.DisplayMode;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.util.DelayedRunnableHandler;
 
 public final class GameLoop extends ApplicationAdapter {
 
-	private Logger log;
+	private static final int TILESIZE = 32;
+
 	private DelayedRunnableHandler callbackHandler;
+	private float time = 0;
+
+	private OrthogonalTiledMapRenderer tiledMapRenderer;
+	private OrthographicCamera camera;
 
 	// disposable objects (need to be cleaned up at end)
 	private Music music;
@@ -26,56 +38,92 @@ public final class GameLoop extends ApplicationAdapter {
 	private Renderer renderer;
 	private AiPlayer aiPlayer;
 	private Goal goal;
+	private Texture flagTexture;
+	private Texture warriorTexture;
 
 	private boolean over = false;
 
 	@Override
 	public void create() {
-		log = new Logger("main");
 		callbackHandler = new DelayedRunnableHandler();
 
-		OrthographicCamera camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 800, 640);
 		renderer = new Renderer(camera);
 
-		aiPlayer = new AiPlayer(new Rectangle(0, 100, 30, 50));
-		goal = new Goal(new Rectangle(700, 100, 30, 50));
+		flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
+		TextureRegion[][] flagFrames = TextureRegion.split(flagTexture, 32, 45);
+		Animation<TextureRegion> flagAnimation = new Animation<>(0.025f, flagFrames[0]);
+		goal = new Goal(new Rectangle(Gdx.graphics.getWidth() - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
+
+		warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
+		TextureRegion[][] warriorFramesRaw = TextureRegion.split(warriorTexture, 64, 64);
+		TextureRegion[] warriorFrames = new TextureRegion[5];
+		IntStream.range(0, 5).forEach(i -> {
+			warriorFrames[i] = warriorFramesRaw[0][i];
+		});
+		Animation<TextureRegion> warriorAnimation = new Animation<>(0.25f, warriorFrames);
+		aiPlayer = new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation);
 
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
 		music.setLooping(true);
 		music.play();
 
 		drumTap = Gdx.audio.newSound(Gdx.files.internal("99751__menegass__bongo1.wav"));
-		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit.wav"));
+		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
+		TiledMap map = new TmxMapLoader().load("tiled/map1.tmx");
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
 	}
 
 	@Override
 	public void render() {
+		time += Gdx.graphics.getDeltaTime();
 		handleInput();
 		updateActors();
 		callbackHandler.update();
-		ScreenUtils.clear(0, 0, 0, 1);
-		renderer.render(Stream.of(aiPlayer, goal).map(x -> (Renderable) x)::iterator);
+
+		camera.update();
+		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
+		tiledMapRenderer.setView(camera);
+		tiledMapRenderer.render();
+		renderer.render(Stream.of(goal, aiPlayer).map(x -> (Renderable) x)::iterator);
 	}
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, music, drumTap, drumTap2, aiPlayer, goal).forEach(Disposable::dispose);
+		Stream.of(renderer, tiledMapRenderer, flagTexture, warriorTexture, music, drumTap, drumTap2, aiPlayer, goal)
+				.forEach(Disposable::dispose);
 	}
 
 	public void handleInput() {
-		if (Gdx.input.isButtonJustPressed(Keys.LEFT)) {
-			log.info("left pressed");
+		if (Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
+			Gdx.app.exit();
+			Gdx.app.log("main", "Exiting app...");
+		} else if (Gdx.input.isKeyJustPressed(Keys.F)) {
+			toggleFullscreen();
 		}
+	}
+
+	private void toggleFullscreen() {
+		boolean fullscreen = Gdx.graphics.isFullscreen();
+		DisplayMode mode = Gdx.graphics.getDisplayMode();
+		boolean success = false;
+		if (fullscreen) {
+			success = Gdx.graphics.setWindowedMode(mode.width, mode.height);
+		} else {
+			success = Gdx.graphics.setFullscreenMode(mode);
+		}
+		Gdx.app.log("main", String.format("Setting fullscreen to %s, success: %s", !fullscreen, success));
 	}
 
 	public void updateActors() {
 		aiPlayer.update(this);
+		goal.update(this);
 	}
 
 	public void triggerAiWin() {
 		if (over) {
-			log.info("Cannot trigger ai win. Game is already over.");
+			Gdx.app.log("main", "Cannot trigger ai win. Game is already over.");
 			return;
 		}
 
@@ -87,5 +135,9 @@ public final class GameLoop extends ApplicationAdapter {
 
 	public Goal getGoal() {
 		return goal;
+	}
+
+	public float getTime() {
+		return time;
 	}
 }

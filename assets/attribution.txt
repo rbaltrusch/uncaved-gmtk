@@ -2,3 +2,7 @@ Atmospheric Study I is written by the creator of the game, Richard Baltrusch (20
 
 99751__menegass__bongo1: https://freesound.org/s/99751/
 57297__satoration__bongo-dry: https://freesound.org/s/57297/
+
+cave_tileset.png: https://opengameart.org/content/db32-cave-tileset (made by Buch http://blog-buch.rhcloud.com).
+
+warrior-spritesheet: https://opengameart.org/content/spearman-pixel-art (made by TheNess https://opengameart.org/users/theness).
