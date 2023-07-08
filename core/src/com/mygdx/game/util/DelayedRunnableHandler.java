@@ -9,25 +9,35 @@ import com.badlogic.gdx.utils.TimeUtils;
 public class DelayedRunnableHandler {
 
 	private List<DelayedRunnable> runnables;
+	private List<DelayedRunnable> queue;
 
 	public DelayedRunnableHandler() {
 		runnables = new ArrayList<>();
+		queue = new ArrayList<>();
 	}
 
 	public void update() {
 		long time = TimeUtils.millis();
+		System.out.println(String.format("Size: %s", runnables.size()));
+		runnables.addAll(queue);
+		queue.clear();
+
 		Iterator<DelayedRunnable> runnables = this.runnables.iterator();
+		List<DelayedRunnable> expiredRunnables = new ArrayList<>();
 		while (runnables.hasNext()) {
 			DelayedRunnable runnable = runnables.next();
 			if (runnable.isDelayOver(time)) {
 				runnable.run();
-				runnables.remove();
+				expiredRunnables.add(runnable);
 			}
 		}
+		expiredRunnables.forEach(this.runnables::remove);
 	}
 
 	public void add(Runnable runnable, long msDelay) {
-		runnables.add(new DelayedRunnable(runnable, msDelay));
+		// adding to queue instead of directly to runnables to avoid concurrent
+		// modification exceptions
+		queue.add(new DelayedRunnable(runnable, msDelay));
 	}
 
 	private class DelayedRunnable implements Runnable {

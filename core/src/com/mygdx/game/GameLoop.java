@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import static com.mygdx.game.util.MusicUtil.fadeIn;
+
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -45,30 +47,6 @@ public final class GameLoop extends ApplicationAdapter {
 
 	@Override
 	public void create() {
-		callbackHandler = new DelayedRunnableHandler();
-
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
-		renderer = new Renderer(camera);
-
-		Texture flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
-		AnimationWrapper<TextureRegion> flagAnimation = AnimationWrapper.of(flagTexture).build(32, 45, 0.025f,
-				x -> x[0]);
-		goal = new Goal(new Rectangle(SCREEN_WIDTH - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
-
-		Texture warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
-		AnimationWrapper<TextureRegion> warriorAnimation = AnimationWrapper.of(warriorTexture).build(64, 64, 0.1f,
-				x -> x[0]);
-		Texture deathTexture = new Texture(Gdx.files.internal("warrior-death.png"));
-		AnimationWrapper<TextureRegion> deathAnimation = AnimationWrapper.of(deathTexture).build(64, 64, 0.05f,
-				x -> x[0]);
-		aiPlayer = new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation,
-				deathAnimation);
-
-		boulder = new Boulder(
-				new Rectangle(SCREEN_WIDTH - TILESIZE * 4, SCREEN_HEIGHT - TILESIZE * 2, TILESIZE * 2, TILESIZE * 2),
-				new Texture(Gdx.files.internal("block2.jpg")));
-
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
 		music.setLooping(true);
 		music.play();
@@ -77,8 +55,40 @@ public final class GameLoop extends ApplicationAdapter {
 		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
 		deathSound = Gdx.audio.newSound(Gdx.files.internal("watermelon.wav"));
 
+		callbackHandler = new DelayedRunnableHandler();
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
+		renderer = new Renderer(camera);
+
+		goal = createGoal();
+		aiPlayer = createAiPlayer();
+		boulder = createBoulder();
 		TiledMap map = new TmxMapLoader().load("tiled/map1.tmx");
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
+	}
+
+	private Goal createGoal() {
+		Texture flagTexture = new Texture(Gdx.files.internal("schecky_flag_raise_strip15.png"));
+		AnimationWrapper<TextureRegion> flagAnimation = AnimationWrapper.of(flagTexture).build(32, 45, 0.025f,
+				x -> x[0]);
+		return new Goal(new Rectangle(SCREEN_WIDTH - TILESIZE, 7 * TILESIZE, TILESIZE, 32), flagAnimation);
+	}
+
+	private AiPlayer createAiPlayer() {
+		Texture warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
+		AnimationWrapper<TextureRegion> warriorAnimation = AnimationWrapper.of(warriorTexture).build(64, 64, 0.1f,
+				x -> x[0]);
+		Texture deathTexture = new Texture(Gdx.files.internal("warrior-death.png"));
+		AnimationWrapper<TextureRegion> deathAnimation = AnimationWrapper.of(deathTexture).build(64, 64, 0.05f,
+				x -> x[0]);
+		return new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation,
+				deathAnimation);
+	}
+
+	private Boulder createBoulder() {
+		return new Boulder(
+				new Rectangle(SCREEN_WIDTH - TILESIZE * 4, SCREEN_HEIGHT - TILESIZE * 2, TILESIZE * 2, TILESIZE * 2),
+				new Texture(Gdx.files.internal("block2.jpg")));
 	}
 
 	@Override
@@ -109,6 +119,8 @@ public final class GameLoop extends ApplicationAdapter {
 			toggleFullscreen();
 		} else if (Gdx.input.isKeyJustPressed(Keys.D)) {
 			boulder.drop();
+		} else if (Gdx.input.isKeyJustPressed(Keys.R)) {
+			restart();
 		}
 	}
 
@@ -137,6 +149,27 @@ public final class GameLoop extends ApplicationAdapter {
 		deathSound.play();
 		over = true;
 		Gdx.app.log("main", "Player wins!");
+	}
+
+	public void restart() {
+		over = false;
+		time = 0;
+		goal.dispose();
+		goal = createGoal();
+
+		aiPlayer.dispose();
+		aiPlayer = createAiPlayer();
+
+		boulder.dispose();
+		boulder = createBoulder();
+		callbackHandler = new DelayedRunnableHandler();
+
+		// fade music back in
+		if (!music.isPlaying()) {
+			music.setVolume(0);
+			music.play();
+			fadeIn(music, 0.05f, callbackHandler);
+		}
 	}
 
 	public void triggerAiWin() {
