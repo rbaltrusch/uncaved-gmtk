@@ -35,9 +35,11 @@ public final class GameLoop extends ApplicationAdapter {
 	private Music music;
 	private Sound drumTap;
 	private Sound drumTap2;
+	private Sound deathSound;
 	private Renderer renderer;
 	private AiPlayer aiPlayer;
 	private Goal goal;
+	private Boulder boulder;
 
 	private boolean over = false;
 
@@ -57,7 +59,15 @@ public final class GameLoop extends ApplicationAdapter {
 		Texture warriorTexture = new Texture(Gdx.files.internal("warrior-spritesheet-larger.png"));
 		AnimationWrapper<TextureRegion> warriorAnimation = AnimationWrapper.of(warriorTexture).build(64, 64, 0.1f,
 				x -> x[0]);
-		aiPlayer = new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation);
+		Texture deathTexture = new Texture(Gdx.files.internal("warrior-death.png"));
+		AnimationWrapper<TextureRegion> deathAnimation = AnimationWrapper.of(deathTexture).build(64, 64, 0.05f,
+				x -> x[0]);
+		aiPlayer = new AiPlayer(new Rectangle(0, 7 * TILESIZE, TILESIZE * 2, TILESIZE * 2), warriorAnimation,
+				deathAnimation);
+
+		boulder = new Boulder(
+				new Rectangle(SCREEN_WIDTH - TILESIZE * 4, SCREEN_HEIGHT - TILESIZE * 2, TILESIZE * 2, TILESIZE * 2),
+				new Texture(Gdx.files.internal("block2.jpg")));
 
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
 		music.setLooping(true);
@@ -65,6 +75,8 @@ public final class GameLoop extends ApplicationAdapter {
 
 		drumTap = Gdx.audio.newSound(Gdx.files.internal("99751__menegass__bongo1.wav"));
 		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
+		deathSound = Gdx.audio.newSound(Gdx.files.internal("watermelon.wav"));
+
 		TiledMap map = new TmxMapLoader().load("tiled/map1.tmx");
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
 	}
@@ -80,12 +92,13 @@ public final class GameLoop extends ApplicationAdapter {
 		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
-		renderer.render(Stream.of(goal, aiPlayer).map(x -> (Renderable) x)::iterator);
+		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
 	}
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, tiledMapRenderer, music, drumTap, drumTap2, aiPlayer, goal).forEach(Disposable::dispose);
+		Stream.of(renderer, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal, boulder)
+				.forEach(Disposable::dispose);
 	}
 
 	public void handleInput() {
@@ -94,6 +107,8 @@ public final class GameLoop extends ApplicationAdapter {
 			Gdx.app.log("main", "Exiting app...");
 		} else if (Gdx.input.isKeyJustPressed(Keys.F)) {
 			toggleFullscreen();
+		} else if (Gdx.input.isKeyJustPressed(Keys.D)) {
+			boulder.drop();
 		}
 	}
 
@@ -110,20 +125,35 @@ public final class GameLoop extends ApplicationAdapter {
 	}
 
 	public void updateActors() {
-		aiPlayer.update(this);
-		goal.update(this);
+		Stream.of(aiPlayer, goal, boulder).map(x -> (Actor) x).forEach(x -> x.update(this));
+	}
+
+	public void triggerPlayerWin() {
+		if (over) {
+			return;
+		}
+
+		aiPlayer.kill();
+		deathSound.play();
+		over = true;
+		Gdx.app.log("main", "Player wins!");
 	}
 
 	public void triggerAiWin() {
 		if (over) {
-			Gdx.app.log("main", "Cannot trigger ai win. Game is already over.");
 			return;
 		}
 
+		goal.reach();
 		music.stop();
 		drumTap.play();
 		callbackHandler.add(drumTap2::play, 1000);
 		over = true;
+		Gdx.app.log("main", "AI wins!");
+	}
+
+	public AiPlayer getAiPlayer() {
+		return aiPlayer;
 	}
 
 	public Goal getGoal() {
