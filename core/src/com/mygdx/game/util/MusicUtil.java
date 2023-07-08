@@ -9,7 +9,6 @@ public final class MusicUtil {
 	public static void fadeIn(Music music, float volumeIncrease, DelayedRunnableHandler handler) {
 		handler.add(() -> {
 			boolean maxVolume = increaseVolume(music, volumeIncrease);
-			System.out.println(maxVolume);
 			if (!maxVolume) {
 				fadeIn(music, volumeIncrease, handler);
 			}
@@ -22,7 +21,6 @@ public final class MusicUtil {
 	 */
 	public static boolean increaseVolume(Music music, float volumeIncrease) {
 		float newVolume = Math.min(1, music.getVolume() + volumeIncrease);
-		System.out.println(newVolume);
 		music.setVolume(newVolume);
 		return music.getVolume() >= 1f;
 	}

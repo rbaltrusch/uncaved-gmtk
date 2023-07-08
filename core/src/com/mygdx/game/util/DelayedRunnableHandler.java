@@ -18,7 +18,6 @@ public class DelayedRunnableHandler {
 
 	public void update() {
 		long time = TimeUtils.millis();
-		System.out.println(String.format("Size: %s", runnables.size()));
 		runnables.addAll(queue);
 		queue.clear();
 
