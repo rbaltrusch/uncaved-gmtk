@@ -23,6 +23,7 @@ public class AiPlayer extends RectEntity implements Renderable, Actor, Disposabl
 		speed = new Vector2(200, 0);
 		this.walkAnimation = Objects.requireNonNull(walkAnimation);
 		this.deathAnimation = Objects.requireNonNull(deathAnimation);
+		currentFrame = walkAnimation.getKeyFrame(0);
 	}
 
 	public void kill() {

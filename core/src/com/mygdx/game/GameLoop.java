@@ -32,6 +32,7 @@ public final class GameLoop extends ApplicationAdapter {
 	private static final int TILESIZE = 32;
 	public static final int SCREEN_WIDTH = 800;
 	public static final int SCREEN_HEIGHT = 640;
+	private static final int WARRIOR_SPEED_INCREASE_PER_WIN = 50;
 
 	private DelayedRunnableHandler callbackHandler;
 	private SoundHandler soundHandler;
@@ -49,10 +50,15 @@ public final class GameLoop extends ApplicationAdapter {
 	private Goal goal;
 	private Boulder boulder;
 	private BitmapFont font;
+	private BitmapFont titleFont;
 	private SpriteBatch batch;
 
 	private boolean over = false;
+	private boolean lost = false;
+	private boolean inTitleScreen = true;
 	private float time = 0;
+	private int winCount = 0;
+	private int highScore = 0;
 
 	@Override
 	public void create() {
@@ -61,8 +67,12 @@ public final class GameLoop extends ApplicationAdapter {
 		param.borderColor = new Color(61 / 256f, 43 / 256f, 31 / 256f, 1);
 		param.color = new Color(227 / 256f, 218 / 256f, 201 / 256f, 1);
 		param.borderWidth = 1f;
-		param.size = 72;
+		param.size = 36;
 		font = generator.generateFont(param);
+
+		param.borderWidth = 5f;
+		param.size = 72;
+		titleFont = generator.generateFont(param);
 		generator.dispose();
 
 		soundHandler = new SoundHandler();
@@ -117,19 +127,55 @@ public final class GameLoop extends ApplicationAdapter {
 		handleInput();
 		updateActors();
 		callbackHandler.update();
-
-//		if (aiPlayer.getRectangle().x > SCREEN_WIDTH / 2) {
-//			camera.translate(normalizeVector(aiPlayer.getSpeed()));
-//		}
 		camera.update();
 
-		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
+		ScreenUtils.clear(34f / 256, 32f / 256, 54f / 256, 1);
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
-		Renderable titleText = (renderer_) -> {
-			GlyphLayout layout = new GlyphLayout(font, "UNCAVED");
+
+		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
+		renderer.render(constructTextRenderables()::iterator);
+	}
+
+	@Override
+	public void dispose() {
+		Stream.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer,
+				goal, boulder).forEach(Disposable::dispose);
+	}
+
+	public Stream<Renderable> constructTextRenderables() {
+		Renderable emptyRenderable = x -> {
+		};
+		Renderable titleText = inTitleScreen ? (renderer_) -> {
+			// title
+			GlyphLayout layout = new GlyphLayout(titleFont, "UNCAVED");
 			float x = (SCREEN_WIDTH - layout.width) / 2;
-			float y = (SCREEN_HEIGHT - layout.height) / 2 + 50;
+			float y = (SCREEN_HEIGHT - layout.height) / 2 + 60;
+			titleFont.draw(batch, layout, x, y);
+
+			// controls
+			layout = new GlyphLayout(font, "Press Enter to start");
+			x = (SCREEN_WIDTH - layout.width) / 2;
+			y = (SCREEN_HEIGHT - layout.height) / 2;
+			font.draw(batch, layout, x, y);
+
+			layout = new GlyphLayout(font, "Drop with D");
+			Rectangle rect = boulder.getRectangle();
+			x = rect.x + (rect.width - layout.width) / 2;
+			y = rect.y - layout.height;
+			font.draw(batch, layout, x, y);
+		} : emptyRenderable;
+
+		Renderable pointsText = inTitleScreen ? emptyRenderable : (renderer_) -> {
+			// points
+			GlyphLayout layout = new GlyphLayout(font, String.format("Points: %s", winCount));
+			float x = 10;
+			float y = SCREEN_HEIGHT - layout.height;
+			font.draw(batch, layout, x, y);
+
+			// warrior speed
+			layout = new GlyphLayout(font, String.format("Warrior speed: %s", (int) aiPlayer.getSpeed().x));
+			y -= layout.height + 5;
 			font.draw(batch, layout, x, y);
 		};
 
@@ -138,15 +184,15 @@ public final class GameLoop extends ApplicationAdapter {
 			float x = (SCREEN_WIDTH - layout.width) / 2;
 			float y = (SCREEN_HEIGHT - layout.height) / 2;
 			font.draw(batch, layout, x, y);
-		} : x -> {
-		};
-		renderer.render(Stream.of(goal, aiPlayer, boulder, restartText, titleText).map(x -> x)::iterator);
-	}
+		} : emptyRenderable;
 
-	@Override
-	public void dispose() {
-		Stream.of(renderer, batch, font, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal,
-				boulder).forEach(Disposable::dispose);
+		Renderable highScoreText = lost ? (renderer_) -> {
+			GlyphLayout layout = new GlyphLayout(font, String.format("Highscore: %s", highScore));
+			float x = (SCREEN_WIDTH - layout.width) / 2;
+			float y = (SCREEN_HEIGHT - layout.height) / 2 - layout.height - 5;
+			font.draw(batch, layout, x, y);
+		} : emptyRenderable;
+		return Stream.of(restartText, titleText, pointsText, highScoreText);
 	}
 
 	public void handleInput() {
@@ -157,10 +203,12 @@ public final class GameLoop extends ApplicationAdapter {
 			toggleFullscreen();
 		} else if (Gdx.input.isKeyJustPressed(Keys.M)) {
 			soundHandler.toggleMute();
-		} else if (Gdx.input.isKeyJustPressed(Keys.D)) {
+		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.D)) {
 			boulder.drop();
-		} else if (Gdx.input.isKeyJustPressed(Keys.R)) {
+		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.R)) {
 			restart();
+		} else if (inTitleScreen && Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+			inTitleScreen = false;
 		}
 	}
 
@@ -181,28 +229,22 @@ public final class GameLoop extends ApplicationAdapter {
 	}
 
 	public void updateActors() {
-		Stream.of(aiPlayer, goal, boulder).map(x -> (Actor) x).forEach(x -> x.update(this));
-	}
-
-	public void triggerPlayerWin() {
-		if (over) {
+		if (inTitleScreen) { // HACK
 			return;
 		}
-
-		aiPlayer.kill();
-		soundHandler.play(deathSound);
-		over = true;
-		Gdx.app.log("main", "Player wins!");
+		Stream.of(aiPlayer, goal, boulder).map(x -> (Actor) x).forEach(x -> x.update(this));
 	}
 
 	public void restart() {
 		over = false;
+		lost = false;
 		time = 0;
 		goal.dispose();
 		goal = createGoal();
 
 		aiPlayer.dispose();
 		aiPlayer = createAiPlayer();
+		aiPlayer.getSpeed().x += winCount * WARRIOR_SPEED_INCREASE_PER_WIN;
 
 		boulder.dispose();
 		boulder = createBoulder();
@@ -216,6 +258,19 @@ public final class GameLoop extends ApplicationAdapter {
 		}
 	}
 
+	public void triggerPlayerWin() {
+		if (over) {
+			return;
+		}
+
+		aiPlayer.kill();
+		soundHandler.play(deathSound);
+		over = true;
+		winCount++;
+		highScore = Math.max(highScore, winCount);
+		Gdx.app.log("main", "Player wins!");
+	}
+
 	public void triggerAiWin() {
 		if (over) {
 			return;
@@ -226,6 +281,7 @@ public final class GameLoop extends ApplicationAdapter {
 		soundHandler.play(drumTap);
 		callbackHandler.add(() -> soundHandler.play(drumTap2), 1000);
 		over = true;
+		lost = true;
 		Gdx.app.log("main", "AI wins!");
 	}
 
