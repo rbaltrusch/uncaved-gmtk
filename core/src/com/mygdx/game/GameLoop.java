@@ -34,7 +34,7 @@ public final class GameLoop extends ApplicationAdapter {
 	public static final int SCREEN_HEIGHT = 640;
 
 	private DelayedRunnableHandler callbackHandler;
-	private float time = 0;
+	private SoundHandler soundHandler;
 
 	private OrthogonalTiledMapRenderer tiledMapRenderer;
 	private OrthographicCamera camera;
@@ -52,6 +52,7 @@ public final class GameLoop extends ApplicationAdapter {
 	private SpriteBatch batch;
 
 	private boolean over = false;
+	private float time = 0;
 
 	@Override
 	public void create() {
@@ -60,13 +61,14 @@ public final class GameLoop extends ApplicationAdapter {
 		param.borderColor = new Color(61 / 256f, 43 / 256f, 31 / 256f, 1);
 		param.color = new Color(227 / 256f, 218 / 256f, 201 / 256f, 1);
 		param.borderWidth = 1f;
-		param.size = 36;
+		param.size = 72;
 		font = generator.generateFont(param);
 		generator.dispose();
 
+		soundHandler = new SoundHandler();
 		music = Gdx.audio.newMusic(Gdx.files.internal("Atmospheric study combined.mp3"));
 		music.setLooping(true);
-		music.play();
+		soundHandler.play(music);
 
 		drumTap = Gdx.audio.newSound(Gdx.files.internal("99751__menegass__bongo1.wav"));
 		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
@@ -124,6 +126,13 @@ public final class GameLoop extends ApplicationAdapter {
 		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
+		Renderable titleText = (renderer_) -> {
+			GlyphLayout layout = new GlyphLayout(font, "UNCAVED");
+			float x = (SCREEN_WIDTH - layout.width) / 2;
+			float y = (SCREEN_HEIGHT - layout.height) / 2 + 50;
+			font.draw(batch, layout, x, y);
+		};
+
 		Renderable restartText = over ? (renderer_) -> {
 			GlyphLayout layout = new GlyphLayout(font, "Press R to restart");
 			float x = (SCREEN_WIDTH - layout.width) / 2;
@@ -131,7 +140,7 @@ public final class GameLoop extends ApplicationAdapter {
 			font.draw(batch, layout, x, y);
 		} : x -> {
 		};
-		renderer.render(Stream.of(goal, aiPlayer, boulder, restartText).map(x -> x)::iterator);
+		renderer.render(Stream.of(goal, aiPlayer, boulder, restartText, titleText).map(x -> x)::iterator);
 	}
 
 	@Override
@@ -146,6 +155,8 @@ public final class GameLoop extends ApplicationAdapter {
 			Gdx.app.log("main", "Exiting app...");
 		} else if (Gdx.input.isKeyJustPressed(Keys.F)) {
 			toggleFullscreen();
+		} else if (Gdx.input.isKeyJustPressed(Keys.M)) {
+			soundHandler.toggleMute();
 		} else if (Gdx.input.isKeyJustPressed(Keys.D)) {
 			boulder.drop();
 		} else if (Gdx.input.isKeyJustPressed(Keys.R)) {
@@ -165,6 +176,10 @@ public final class GameLoop extends ApplicationAdapter {
 		Gdx.app.log("main", String.format("Setting fullscreen to %s, success: %s", !fullscreen, success));
 	}
 
+	public void toggleMute() {
+
+	}
+
 	public void updateActors() {
 		Stream.of(aiPlayer, goal, boulder).map(x -> (Actor) x).forEach(x -> x.update(this));
 	}
@@ -175,7 +190,7 @@ public final class GameLoop extends ApplicationAdapter {
 		}
 
 		aiPlayer.kill();
-		deathSound.play();
+		soundHandler.play(deathSound);
 		over = true;
 		Gdx.app.log("main", "Player wins!");
 	}
@@ -208,8 +223,8 @@ public final class GameLoop extends ApplicationAdapter {
 
 		goal.reach();
 		music.stop();
-		drumTap.play();
-		callbackHandler.add(drumTap2::play, 1000);
+		soundHandler.play(drumTap);
+		callbackHandler.add(() -> soundHandler.play(drumTap2), 1000);
 		over = true;
 		Gdx.app.log("main", "AI wins!");
 	}

@@ -8,20 +8,28 @@ public final class MusicUtil {
 
 	public static void fadeIn(Music music, float volumeIncrease, DelayedRunnableHandler handler) {
 		handler.add(() -> {
-			boolean maxVolume = increaseVolume(music, volumeIncrease);
-			if (!maxVolume) {
+			float newVolume = changeVolume(music, volumeIncrease);
+			if (newVolume < 1f) {
 				fadeIn(music, volumeIncrease, handler);
 			}
 		}, 0);
 	}
 
+	public static void fadeOut(Music music, float volumeIncrease, DelayedRunnableHandler handler) {
+		handler.add(() -> {
+			float newVolume = changeVolume(music, volumeIncrease);
+			if (newVolume > 0f) {
+				fadeOut(music, volumeIncrease, handler);
+			}
+		}, 0);
+	}
+
 	/**
-	 * Increases volume by specified increase, then returns true if music is at max
-	 * volume, else false.
+	 * Increases volume by specified increase, then returns new volume
 	 */
-	public static boolean increaseVolume(Music music, float volumeIncrease) {
-		float newVolume = Math.min(1, music.getVolume() + volumeIncrease);
+	private static float changeVolume(Music music, float volumeIncrease) {
+		float newVolume = Math.max(0, Math.min(1, music.getVolume() + volumeIncrease));
 		music.setVolume(newVolume);
-		return music.getVolume() >= 1f;
+		return newVolume;
 	}
 }
