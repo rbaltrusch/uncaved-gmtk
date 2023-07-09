@@ -40,6 +40,7 @@ public final class GameLoop extends ApplicationAdapter {
 
 	private OrthogonalTiledMapRenderer tiledMapRenderer;
 	private OrthographicCamera camera;
+	private CameraShake cameraShake;
 
 	// disposable objects (need to be cleaned up at end)
 	private Music music;
@@ -88,6 +89,7 @@ public final class GameLoop extends ApplicationAdapter {
 		callbackHandler = new DelayedRunnableHandler();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
+		cameraShake = new CameraShake(camera, 0.5f);
 		batch = new SpriteBatch();
 		renderer = new Renderer(camera, batch);
 
@@ -134,6 +136,7 @@ public final class GameLoop extends ApplicationAdapter {
 		updateActors();
 		callbackHandler.update();
 		camera.update();
+		cameraShake.update();
 
 		ScreenUtils.clear(34f / 256, 32f / 256, 54f / 256, 1);
 		tiledMapRenderer.setView(camera);
@@ -266,6 +269,7 @@ public final class GameLoop extends ApplicationAdapter {
 		}
 
 		aiPlayer.kill();
+		cameraShake.start();
 		soundHandler.play(deathSound);
 		over = true;
 		winCount++;
