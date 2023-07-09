@@ -38,5 +38,6 @@ public class Boulder extends RectEntity implements Actor, Renderable, Disposable
 
 	@Override
 	public void dispose() {
+		texture.dispose();
 	}
 }
