@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -111,8 +112,13 @@ public final class GameLoop extends ApplicationAdapter {
 		Texture deathTexture = new Texture(Gdx.files.internal("warrior-death.png"));
 		AnimationWrapper<TextureRegion> deathAnimation = AnimationWrapper.of(deathTexture).build(64, 64, 0.05f,
 				x -> x[0]);
+
+		ParticleEffect walkEffect = new ParticleEffect();
+		walkEffect.load(Gdx.files.internal("walk6.particleeffect"), Gdx.files.internal(""));
+		walkEffect.start();
+
 		return new AiPlayer(new Rectangle(TILESIZE, 7 * TILESIZE, TILESIZE, TILESIZE * 2), warriorAnimation,
-				deathAnimation);
+				deathAnimation, walkEffect);
 	}
 
 	private Boulder createBoulder() {
@@ -224,10 +230,6 @@ public final class GameLoop extends ApplicationAdapter {
 		Gdx.app.log("main", String.format("Setting fullscreen to %s, success: %s", !fullscreen, success));
 	}
 
-	public void toggleMute() {
-
-	}
-
 	public void updateActors() {
 		if (inTitleScreen) { // HACK
 			return;
@@ -267,6 +269,7 @@ public final class GameLoop extends ApplicationAdapter {
 		soundHandler.play(deathSound);
 		over = true;
 		winCount++;
+		aiPlayer.getSpeed().x += winCount * WARRIOR_SPEED_INCREASE_PER_WIN;
 		highScore = Math.max(highScore, winCount);
 		Gdx.app.log("main", "Player wins!");
 	}
@@ -282,6 +285,7 @@ public final class GameLoop extends ApplicationAdapter {
 		callbackHandler.add(() -> soundHandler.play(drumTap2), 1000);
 		over = true;
 		lost = true;
+		winCount = 0;
 		Gdx.app.log("main", "AI wins!");
 	}
 

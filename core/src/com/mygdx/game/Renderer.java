@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -37,6 +38,11 @@ public final class Renderer implements Disposable {
 
 	public void draw(Rectangle pos, TextureRegion textureRegion) {
 		batch.draw(textureRegion, pos.x, pos.y);
+	}
+
+	public void draw(Rectangle pos, ParticleEffect particleEffct) {
+		particleEffct.getEmitters().first().setPosition(pos.x, pos.y);
+		particleEffct.draw(batch);
 	}
 
 	public void drawRectangle(Rectangle rect, Color color) {
