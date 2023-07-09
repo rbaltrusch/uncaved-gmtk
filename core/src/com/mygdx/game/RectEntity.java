@@ -30,4 +30,8 @@ public abstract class RectEntity {
 	public boolean overlaps(Rectangle rect) {
 		return this.rect.overlaps(rect);
 	}
+
+	public Rectangle getRectangle() {
+		return rect;
+	}
 }

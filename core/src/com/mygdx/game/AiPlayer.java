@@ -58,4 +58,8 @@ public class AiPlayer extends RectEntity implements Renderable, Actor, Disposabl
 		walkAnimation.dispose();
 		deathAnimation.dispose();
 	}
+
+	public Vector2 getSpeed() {
+		return speed;
+	}
 }

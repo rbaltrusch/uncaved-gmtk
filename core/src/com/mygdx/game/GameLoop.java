@@ -116,7 +116,11 @@ public final class GameLoop extends ApplicationAdapter {
 		updateActors();
 		callbackHandler.update();
 
+//		if (aiPlayer.getRectangle().x > SCREEN_WIDTH / 2) {
+//			camera.translate(normalizeVector(aiPlayer.getSpeed()));
+//		}
 		camera.update();
+
 		ScreenUtils.clear(159f / 256, 129f / 256, 112f / 256, 1);
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
@@ -132,8 +136,8 @@ public final class GameLoop extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, font, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal, boulder)
-				.forEach(Disposable::dispose);
+		Stream.of(renderer, batch, font, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer, goal,
+				boulder).forEach(Disposable::dispose);
 	}
 
 	public void handleInput() {
