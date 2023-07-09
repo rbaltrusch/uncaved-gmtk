@@ -96,8 +96,31 @@ public final class GameLoop extends ApplicationAdapter {
 		goal = createGoal();
 		aiPlayer = createAiPlayer();
 		boulder = createBoulder();
-		TiledMap map = new TmxMapLoader().load("tiled/map1.tmx");
+		TiledMap map = new TmxMapLoader().load("tiled/map2.tmx");
 		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
+	}
+
+	@Override
+	public void render() {
+		time += Gdx.graphics.getDeltaTime();
+		handleInput();
+		updateActors();
+		callbackHandler.update();
+		camera.update();
+		cameraShake.update();
+
+		ScreenUtils.clear(34f / 256, 32f / 256, 54f / 256, 1);
+		tiledMapRenderer.setView(camera);
+		tiledMapRenderer.render();
+
+		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
+		renderer.render(constructTextRenderables()::iterator);
+	}
+
+	@Override
+	public void dispose() {
+		Stream.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer,
+				goal, boulder).forEach(Disposable::dispose);
 	}
 
 	private Goal createGoal() {
@@ -124,32 +147,8 @@ public final class GameLoop extends ApplicationAdapter {
 	}
 
 	private Boulder createBoulder() {
-		return new Boulder(
-				new Rectangle(SCREEN_WIDTH - TILESIZE * 4, SCREEN_HEIGHT - TILESIZE * 2, TILESIZE * 2, TILESIZE * 2),
-				new Texture(Gdx.files.internal("block2.jpg")));
-	}
-
-	@Override
-	public void render() {
-		time += Gdx.graphics.getDeltaTime();
-		handleInput();
-		updateActors();
-		callbackHandler.update();
-		camera.update();
-		cameraShake.update();
-
-		ScreenUtils.clear(34f / 256, 32f / 256, 54f / 256, 1);
-		tiledMapRenderer.setView(camera);
-		tiledMapRenderer.render();
-
-		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
-		renderer.render(constructTextRenderables()::iterator);
-	}
-
-	@Override
-	public void dispose() {
-		Stream.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer,
-				goal, boulder).forEach(Disposable::dispose);
+		return new Boulder(new Rectangle(SCREEN_WIDTH - TILESIZE * 3.5f, SCREEN_HEIGHT - TILESIZE * 3 + 10,
+				TILESIZE * 2, TILESIZE * 2), new Texture(Gdx.files.internal("block2.jpg")));
 	}
 
 	public Stream<Renderable> constructTextRenderables() {
@@ -178,8 +177,8 @@ public final class GameLoop extends ApplicationAdapter {
 		Renderable pointsText = inTitleScreen ? emptyRenderable : (renderer_) -> {
 			// points
 			GlyphLayout layout = new GlyphLayout(font, String.format("Points: %s", winCount));
-			float x = 10;
-			float y = SCREEN_HEIGHT - layout.height;
+			float x = TILESIZE;
+			float y = SCREEN_HEIGHT - TILESIZE - 5;
 			font.draw(batch, layout, x, y);
 
 			// warrior speed
