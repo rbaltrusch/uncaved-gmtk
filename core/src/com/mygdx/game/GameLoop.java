@@ -215,7 +215,7 @@ public final class GameLoop extends ApplicationAdapter {
 			boulder.drop();
 		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.R)) {
 			restart();
-		} else if (inTitleScreen && Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+		} else if (inTitleScreen && (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.R))) {
 			inTitleScreen = false;
 		}
 	}
