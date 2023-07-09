@@ -23,9 +23,11 @@ public class Boulder extends RectEntity implements Actor, Renderable, Disposable
 	}
 
 	public void drop(SoundHandler soundHandler) {
-		if (!dropping) {
-			soundHandler.play(stoneSound);
+		if (dropping) {
+			return;
 		}
+
+		soundHandler.play(stoneSound);
 		dropping = true;
 	}
 

@@ -15,6 +15,9 @@ public final class MusicUtil {
 		}, 0);
 	}
 
+	/**
+	 * volumeIncrease must be negative to fade out properly
+	 */
 	public static void fadeOut(Music music, float volumeIncrease, DelayedRunnableHandler handler) {
 		handler.add(() -> {
 			float newVolume = changeVolume(music, volumeIncrease);

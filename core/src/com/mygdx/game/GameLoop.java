@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import static com.mygdx.game.util.MusicUtil.fadeIn;
+import static com.mygdx.game.util.MusicUtil.fadeOut;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -49,6 +50,9 @@ public final class GameLoop extends ApplicationAdapter {
 	private Sound drumTap2;
 	private Sound deathSound;
 	private Sound stoneSound;
+	private Music walkSound;
+	private Music walkSound2;
+	private Music walkSound3;
 	private SoundCollection damageSound;
 	private Renderer renderer;
 	private AiPlayer aiPlayer;
@@ -89,6 +93,9 @@ public final class GameLoop extends ApplicationAdapter {
 		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
 		deathSound = Gdx.audio.newSound(Gdx.files.internal("watermelon.wav"));
 		stoneSound = Gdx.audio.newSound(Gdx.files.internal("stone2.wav"));
+		walkSound = Gdx.audio.newMusic(Gdx.files.internal("walk-faster1.wav"));
+		walkSound2 = Gdx.audio.newMusic(Gdx.files.internal("walk-faster2.wav"));
+		walkSound3 = Gdx.audio.newMusic(Gdx.files.internal("walk-faster3.wav"));
 
 		// @formatter:off
 		damageSound = new SoundCollection(
@@ -135,7 +142,7 @@ public final class GameLoop extends ApplicationAdapter {
 	@Override
 	public void dispose() {
 		List.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, damageSound,
-				stoneSound, aiPlayer, goal, boulder).forEach(Disposable::dispose);
+				stoneSound, walkSound, walkSound2, walkSound3, aiPlayer, goal, boulder).forEach(Disposable::dispose);
 	}
 
 	private Goal createGoal() {
@@ -158,7 +165,7 @@ public final class GameLoop extends ApplicationAdapter {
 		walkEffect.start();
 
 		return new AiPlayer(new Rectangle(TILESIZE, 7 * TILESIZE, TILESIZE, TILESIZE * 2), warriorAnimation,
-				deathAnimation, walkEffect);
+				deathAnimation, walkEffect, walkSound);
 	}
 
 	private Boulder createBoulder() {
@@ -261,9 +268,18 @@ public final class GameLoop extends ApplicationAdapter {
 		goal.dispose();
 		goal = createGoal();
 
+		walkSound.setVolume(1);
 		aiPlayer.dispose();
 		aiPlayer = createAiPlayer();
 		aiPlayer.getSpeed().x += winCount * WARRIOR_SPEED_INCREASE_PER_WIN;
+		// set walk sound depending on speed
+		if (aiPlayer.getSpeed().x > 750) {
+			aiPlayer.setWalkSoud(walkSound3);
+		} else if (aiPlayer.getSpeed().x > 450) {
+			aiPlayer.setWalkSoud(walkSound2);
+		} else {
+			aiPlayer.setWalkSoud(walkSound);
+		}
 
 		boulder.dispose();
 		boulder = createBoulder();
@@ -301,6 +317,7 @@ public final class GameLoop extends ApplicationAdapter {
 		goal.reach();
 		music.stop();
 		soundHandler.play(drumTap);
+		fadeOut(walkSound, -0.05f, callbackHandler);
 		callbackHandler.add(() -> soundHandler.play(drumTap2), 1000);
 		over = true;
 		lost = true;
@@ -318,5 +335,9 @@ public final class GameLoop extends ApplicationAdapter {
 
 	public float getTime() {
 		return time;
+	}
+
+	public SoundHandler getSoundHandler() {
+		return soundHandler;
 	}
 }
