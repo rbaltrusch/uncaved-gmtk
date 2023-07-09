@@ -5,16 +5,33 @@
     },
     "activeFile": "",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
+        "cave_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map2.tmx": {
+            "scale": 1.2148125,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 400.47332407264486,
+                "y": 318.5676801975613
+            }
+        }
     },
     "last.imagePath": "D:/Alle_Dateien/Code/Java/games/uncaved/assets",
     "map.lastUsedFormat": "tmx",
     "map.width": 25,
     "openFiles": [
+        "cave_tileset.tsx",
+        "map2.tmx"
     ],
     "project": "tiled.tiled-project",
     "recentFiles": [
+        "cave_tileset.tsx",
+        "map2.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }
