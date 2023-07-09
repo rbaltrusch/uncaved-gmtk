@@ -5,12 +5,12 @@ import java.util.Objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
-import com.mygdx.game.util.Tuple;
 
 public class AiPlayer extends RectEntity implements Renderable, Actor, Disposable {
 
-	private Tuple speed;
+	private Vector2 speed;
 	private AnimationWrapper<TextureRegion> walkAnimation;
 	private AnimationWrapper<TextureRegion> deathAnimation;
 	private TextureRegion currentFrame;
@@ -20,7 +20,7 @@ public class AiPlayer extends RectEntity implements Renderable, Actor, Disposabl
 	public AiPlayer(Rectangle rect, AnimationWrapper<TextureRegion> walkAnimation,
 			AnimationWrapper<TextureRegion> deathAnimation) {
 		super(rect);
-		speed = new Tuple(200, 0);
+		speed = new Vector2(200, 0);
 		this.walkAnimation = Objects.requireNonNull(walkAnimation);
 		this.deathAnimation = Objects.requireNonNull(deathAnimation);
 	}

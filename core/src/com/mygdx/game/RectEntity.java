@@ -5,7 +5,7 @@ import static com.mygdx.game.util.MoveUtil.moveNormalized;
 import java.util.Objects;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.mygdx.game.util.Tuple;
+import com.badlogic.gdx.math.Vector2;
 
 public abstract class RectEntity {
 
@@ -15,7 +15,7 @@ public abstract class RectEntity {
 		this.rect = Objects.requireNonNull(rect);
 	}
 
-	public void move(Tuple speed) {
+	public void move(Vector2 speed) {
 		move(speed.x, speed.y);
 	}
 
