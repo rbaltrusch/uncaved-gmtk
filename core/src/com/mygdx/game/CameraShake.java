@@ -7,8 +7,9 @@ import com.badlogic.gdx.math.Vector2;
 
 public class CameraShake {
 
-	private static final float MIN_FREQ = 12f; // ~2Hz
-	private static final float MAX_FREQ = 18f; // ~3Hz
+	private static final float MIN_FREQ = 50f;
+	private static final float MAX_FREQ = 50f;
+	private static final float AMPLITUDE = 3f;
 
 	private OrthographicCamera camera;
 	private Vector2 offset;
@@ -34,7 +35,7 @@ public class CameraShake {
 		}
 
 		float frequency = MathUtils.random(MIN_FREQ, MAX_FREQ);
-		offset.x = (float) Math.sin(currentTime * frequency);
+		offset.x = AMPLITUDE * (float) Math.sin(currentTime * frequency);
 		totalMovedX += offset.x;
 		camera.translate(offset);
 		currentTime += Gdx.graphics.getDeltaTime();

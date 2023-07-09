@@ -103,7 +103,7 @@ public final class GameLoop extends ApplicationAdapter {
 		callbackHandler = new DelayedRunnableHandler();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT);
-		cameraShake = new CameraShake(camera, 0.5f);
+		cameraShake = new CameraShake(camera, 0.35f);
 		batch = new SpriteBatch();
 		renderer = new Renderer(camera, batch);
 
