@@ -18,6 +18,7 @@ public class Boulder extends RectEntity implements Actor, Renderable, Disposable
 	private Vector2 speed;
 	private float dropTime = 0;
 	private boolean dropping = false;
+	private static final Color dropParticleColor = new Color(0.3f, 0.3f, 0.3f, 0.3f);
 
 	protected Boulder(Rectangle rect, Texture texture, Sound stoneSound) {
 		super(rect);
@@ -39,17 +40,8 @@ public class Boulder extends RectEntity implements Actor, Renderable, Disposable
 	@Override
 	public void render(Renderer renderer) {
 		renderer.draw(rect, texture);
-
-		// draw dropping particle effect
 		if (dropping) {
-			float height = Math.min(100, 200 * dropTime);
-			float width = 2;
-			Color color = new Color(0.3f, 0.3f, 0.3f, 0.3f);
-			float offset = 10;
-			Stream.iterate(0, x -> x + 1).limit(6)
-					.map(x -> new Rectangle(rect.x + x * offset + 7, rect.y + rect.height + 10, width, height))
-					.forEach(x -> renderer.drawRectangle(x, color));
-//			renderer.draw(, null);
+			drawDroppingParticleEffect(renderer);
 		}
 	}
 
@@ -68,5 +60,17 @@ public class Boulder extends RectEntity implements Actor, Renderable, Disposable
 	@Override
 	public void dispose() {
 		texture.dispose();
+	}
+
+	public void drawDroppingParticleEffect(Renderer renderer) {
+		float height = Math.min(100, 200 * dropTime);
+		float width = 2;
+		float offset = 10;
+		// @formatter:off
+		Stream.iterate(0, x -> x + 1)
+			.limit(6)
+			.map(x -> new Rectangle(rect.x + x * offset + 7, rect.y + rect.height + 10, width, height))
+			.forEach(x -> renderer.drawRectangle(x, dropParticleColor));
+		// @formatter:on
 	}
 }
