@@ -2,6 +2,7 @@ package com.mygdx.game;
 
 import static com.mygdx.game.util.MusicUtil.fadeIn;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -127,14 +128,14 @@ public final class GameLoop extends ApplicationAdapter {
 		tiledMapRenderer.setView(camera);
 		tiledMapRenderer.render();
 
-		renderer.render(Stream.of(goal, aiPlayer, boulder).map(x -> (Renderable) x)::iterator);
+		renderer.render(List.of(goal, aiPlayer, boulder));
 		renderer.render(constructTextRenderables()::iterator);
 	}
 
 	@Override
 	public void dispose() {
-		Stream.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, aiPlayer,
-				goal, boulder).forEach(Disposable::dispose);
+		List.of(renderer, batch, font, titleFont, tiledMapRenderer, music, drumTap, drumTap2, deathSound, damageSound,
+				stoneSound, aiPlayer, goal, boulder).forEach(Disposable::dispose);
 	}
 
 	private Goal createGoal() {
