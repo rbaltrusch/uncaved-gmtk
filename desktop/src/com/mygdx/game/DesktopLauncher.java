@@ -13,6 +13,7 @@ public class DesktopLauncher {
 		config.setWindowedMode(GameLoop.SCREEN_WIDTH, GameLoop.SCREEN_HEIGHT);
 		config.useVsync(true);
 		config.setResizable(false);
+		config.setWindowIcon("block2.jpg");
 		new Lwjgl3Application(new GameLoop(), config);
 	}
 }
