@@ -233,6 +233,8 @@ public final class GameLoop extends ApplicationAdapter {
 			toggleFullscreen();
 		} else if (Gdx.input.isKeyJustPressed(Keys.M)) {
 			soundHandler.toggleMute();
+		} else if (Gdx.input.isKeyJustPressed(Keys.S)) {
+			cameraShake.toggleEnable();
 		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.D)) {
 			boulder.drop(soundHandler);
 		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.R)) {

@@ -14,6 +14,7 @@ public class CameraShake {
 	private OrthographicCamera camera;
 	private Vector2 offset;
 	private boolean ongoing = false;
+	private boolean enabled = true;
 	private float maxTime;
 	private float currentTime;
 	private float totalMovedX;
@@ -24,8 +25,15 @@ public class CameraShake {
 		offset = new Vector2();
 	}
 
+	public void toggleEnable() {
+		enabled = !enabled;
+		if (!enabled && ongoing) {
+			reset();
+		}
+	}
+
 	public void update() {
-		if (!ongoing) {
+		if (!ongoing || !enabled) {
 			return;
 		}
 
@@ -42,6 +50,10 @@ public class CameraShake {
 	}
 
 	public void start() {
+		if (!enabled) {
+			return;
+		}
+
 		ongoing = true;
 		offset = new Vector2();
 		currentTime = 0;
