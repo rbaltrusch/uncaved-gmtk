@@ -10,3 +10,7 @@ warrior-spritesheet: https://opengameart.org/content/spearman-pixel-art (made by
 watermelon.wav: https://freesound.org/people/duckduckpony/sounds/204024/ (made by duckduckpony under the CC license https://creativecommons.org/licenses/by/4.0/).
 
 https://kenney.nl/assets/kenney-fonts (licensed under creative commons CC0)
+
+damage sounds license free by my friend Daniel.
+
+stone sound: https://freesound.org/people/iwanPlays/sounds/567251/ licensed under creative commons CC0)

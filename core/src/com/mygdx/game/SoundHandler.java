@@ -45,6 +45,10 @@ public class SoundHandler {
 		sound.play(this.volume);
 	}
 
+	public void play(SoundCollection sound) {
+		sound.play(this.volume);
+	}
+
 	public void play(Music music) {
 		this.music = music;
 		music.setVolume(volume);

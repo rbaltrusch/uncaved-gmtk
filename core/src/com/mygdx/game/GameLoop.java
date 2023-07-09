@@ -47,6 +47,8 @@ public final class GameLoop extends ApplicationAdapter {
 	private Sound drumTap;
 	private Sound drumTap2;
 	private Sound deathSound;
+	private Sound stoneSound;
+	private SoundCollection damageSound;
 	private Renderer renderer;
 	private AiPlayer aiPlayer;
 	private Goal goal;
@@ -85,6 +87,18 @@ public final class GameLoop extends ApplicationAdapter {
 		drumTap = Gdx.audio.newSound(Gdx.files.internal("99751__menegass__bongo1.wav"));
 		drumTap2 = Gdx.audio.newSound(Gdx.files.internal("57297__satoration__bongo-dry-16bit-short.wav"));
 		deathSound = Gdx.audio.newSound(Gdx.files.internal("watermelon.wav"));
+		stoneSound = Gdx.audio.newSound(Gdx.files.internal("stone2.wav"));
+
+		// @formatter:off
+		damageSound = new SoundCollection(
+			Stream.iterate(1, x -> x + 1)
+				.limit(6)
+				.map(x -> String.format("damage%s.wav", x))
+				.map(Gdx.files::internal)
+				.map(Gdx.audio::newSound)
+				.toList()
+		);
+		// @formatter:on
 
 		callbackHandler = new DelayedRunnableHandler();
 		camera = new OrthographicCamera();
@@ -148,7 +162,7 @@ public final class GameLoop extends ApplicationAdapter {
 
 	private Boulder createBoulder() {
 		return new Boulder(new Rectangle(SCREEN_WIDTH - TILESIZE * 3.5f, SCREEN_HEIGHT - TILESIZE * 3 + 10,
-				TILESIZE * 2, TILESIZE * 2), new Texture(Gdx.files.internal("block2.jpg")));
+				TILESIZE * 2, TILESIZE * 2), new Texture(Gdx.files.internal("block2.jpg")), stoneSound);
 	}
 
 	public Stream<Renderable> constructTextRenderables() {
@@ -212,7 +226,7 @@ public final class GameLoop extends ApplicationAdapter {
 		} else if (Gdx.input.isKeyJustPressed(Keys.M)) {
 			soundHandler.toggleMute();
 		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.D)) {
-			boulder.drop();
+			boulder.drop(soundHandler);
 		} else if (!inTitleScreen && Gdx.input.isKeyJustPressed(Keys.R)) {
 			restart();
 		} else if (inTitleScreen && (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.R))) {
@@ -270,6 +284,7 @@ public final class GameLoop extends ApplicationAdapter {
 		aiPlayer.kill();
 		cameraShake.start();
 		soundHandler.play(deathSound);
+		soundHandler.play(damageSound);
 		over = true;
 		winCount++;
 		aiPlayer.getSpeed().x += winCount * WARRIOR_SPEED_INCREASE_PER_WIN;
