@@ -8,3 +8,5 @@ cave_tileset.png: https://opengameart.org/content/db32-cave-tileset (made by Buc
 warrior-spritesheet: https://opengameart.org/content/spearman-pixel-art (made by TheNess https://opengameart.org/users/theness).
 
 watermelon.wav: https://freesound.org/people/duckduckpony/sounds/204024/ (made by duckduckpony under the CC license https://creativecommons.org/licenses/by/4.0/).
+
+https://kenney.nl/assets/kenney-fonts (licensed under creative commons CC0)
